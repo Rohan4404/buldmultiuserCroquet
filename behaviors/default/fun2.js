@@ -215,6 +215,9 @@ class LightPawn extends PawnBehavior {
                     child.material.needsUpdate = true;
                   }
                 });
+
+                // Publish the color change to all users
+                this.publish("colorChange", colorHelper);
               })
               .catch((error) => {
                 console.error("Error fetching API data:", error);
