@@ -279,7 +279,9 @@ class LightPawn extends PawnBehavior {
 
           window.addEventListener("click", onClick, false);
 
+          // Debug: Log subscription to color changes
           this.subscribe("colorChange", "changeColor", (color) => {
+            console.log("Received color change:", color);
             model2.traverse((child) => {
               if (child.isMesh) {
                 child.material.color.set(color);
