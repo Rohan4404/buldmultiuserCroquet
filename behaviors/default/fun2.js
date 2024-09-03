@@ -167,8 +167,6 @@
 
 import { PawnBehavior } from "../PrototypeBehavior";
 import * as THREE from "three";
-import * as dat from "dat.gui";
-import Highcharts from "highcharts";
 
 class LightPawn extends PawnBehavior {
   setup() {
@@ -176,19 +174,12 @@ class LightPawn extends PawnBehavior {
     let group = this.shape;
     let THREE = Microverse.THREE;
 
-    if (this.actor._cardData.toneMappingExposure !== undefined) {
-      trm.renderer.toneMappingExposure =
-        this.actor._cardData.toneMappingExposure;
-    }
-
     const dracoLoader = new THREE.DRACOLoader();
     dracoLoader.setDecoderPath(
       "https://cdn.jsdelivr.net/npm/three@0.152.0/examples/jsm/libs/draco/"
     );
     const gltfLoader = new THREE.GLTFLoader();
     gltfLoader.setDRACOLoader(dracoLoader);
-
-    this.lights = [];
 
     const loadFirstModelPromise = new Promise((resolve, reject) => {
       gltfLoader.load(
@@ -205,17 +196,13 @@ class LightPawn extends PawnBehavior {
             fetch("https://full-duplex-dynalic-api.vercel.app/btn-state")
               .then((response) => response.json())
               .then((data) => {
-                console.log("API response:", data.btnState);
-                const colorHelper = data.btnState === 1 ? "red" : "white"; // Set to red if 1, otherwise white
-
+                const colorHelper = data.btnState === 1 ? "red" : "white";
                 model1.traverse((child) => {
                   if (child.isMesh) {
                     child.material.color.set(colorHelper);
                     child.material.needsUpdate = true;
                   }
                 });
-
-                // Publish the color change to all users
                 this.publish("colorChange", colorHelper);
               })
               .catch((error) => {
@@ -226,7 +213,6 @@ class LightPawn extends PawnBehavior {
           fetchAPIDataAndChangeColor();
           setInterval(fetchAPIDataAndChangeColor, 1000);
 
-          console.log("First model loaded:", model1);
           resolve(model1);
         },
         null,
@@ -248,9 +234,7 @@ class LightPawn extends PawnBehavior {
           model2.rotation.set(-0.4, -1.4, -0.5);
 
           group.add(model2);
-          console.log("Second model loaded:", model2);
 
-          // Add event listener for click to toggle API state and button color
           model2.traverse((child) => {
             if (child.isMesh) {
               child.userData.clickable = true;
@@ -260,7 +244,7 @@ class LightPawn extends PawnBehavior {
           const raycaster = new THREE.Raycaster();
           const mouse = new THREE.Vector2();
 
-          let isRed = false; // Track the current color state of the button
+          let isRed = false;
 
           const onClick = (event) => {
             mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
@@ -271,21 +255,14 @@ class LightPawn extends PawnBehavior {
             if (intersects.length > 0) {
               const clickedObject = intersects[0].object;
               if (clickedObject.userData.clickable) {
-                // Toggle API state
                 fetch("https://full-duplex-dynalic-api.vercel.app/toggle-btn", {
                   method: "POST",
                 })
                   .then((response) => response.json())
                   .then((data) => {
-                    console.log("Toggled API state:", data);
-                    // Toggle button color
                     isRed = !isRed;
                     const colorHelper = isRed ? "red" : "white";
-                    
-                    // Publish the color change to all users
                     this.publish("colorChange", colorHelper);
-
-                    // Update the local model color
                     model2.traverse((child) => {
                       if (child.isMesh) {
                         child.material.color.set(colorHelper);
@@ -302,7 +279,6 @@ class LightPawn extends PawnBehavior {
 
           window.addEventListener("click", onClick, false);
 
-          // Subscribe to color changes and update the button color for all users
           this.subscribe("colorChange", "changeColor", (color) => {
             model2.traverse((child) => {
               if (child.isMesh) {
