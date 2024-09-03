@@ -165,7 +165,6 @@
 //   ],
 // };
 
-
 import { PawnBehavior } from "../PrototypeBehavior";
 import * as THREE from "three";
 import * as dat from "dat.gui";
@@ -286,6 +285,7 @@ class LightPawn extends PawnBehavior {
                     // Publish the color change to all users
                     this.publish("colorChange", colorHelper);
 
+                    // Update the local model color
                     model2.traverse((child) => {
                       if (child.isMesh) {
                         child.material.color.set(colorHelper);
