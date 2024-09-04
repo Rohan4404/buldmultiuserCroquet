@@ -328,7 +328,6 @@
 //   ],
 // };
 
-
 import { PawnBehavior } from "../PrototypeBehavior";
 import * as THREE from "three";
 
@@ -345,14 +344,13 @@ class LightPawn extends PawnBehavior {
     const gltfLoader = new THREE.GLTFLoader();
     gltfLoader.setDRACOLoader(dracoLoader);
 
-    let model1, model2;
     let isRed = false;
 
     const loadFirstModelPromise = new Promise((resolve, reject) => {
       gltfLoader.load(
         "./assets/light-bulb.glb",
         (gltf) => {
-          model1 = gltf.scene;
+          const model1 = gltf.scene;
           model1.position.set(-5.3, 4.2, 5);
           const scaleFactor = 0.03;
           model1.scale.set(scaleFactor, scaleFactor, scaleFactor);
@@ -365,6 +363,9 @@ class LightPawn extends PawnBehavior {
               child.material.color.set("white");
             }
           });
+
+          // Store model1 as a class property
+          this.model1 = model1;
 
           resolve(model1);
         },
@@ -380,7 +381,7 @@ class LightPawn extends PawnBehavior {
       gltfLoader.load(
         "./assets/light_switch.glb",
         (gltf) => {
-          model2 = gltf.scene;
+          const model2 = gltf.scene;
           model2.position.set(-4.2, 3.5, 5);
           const scaleFactor = 5;
           model2.scale.set(scaleFactor, scaleFactor, scaleFactor);
@@ -393,6 +394,9 @@ class LightPawn extends PawnBehavior {
               child.userData.clickable = true;
             }
           });
+
+          // Store model2 as a class property
+          this.model2 = model2;
 
           const raycaster = new THREE.Raycaster();
           const mouse = new THREE.Vector2();
@@ -439,8 +443,6 @@ class LightPawn extends PawnBehavior {
     Promise.all([loadFirstModelPromise, loadSecondModelPromise])
       .then(([m1, m2]) => {
         console.log("Both models loaded successfully");
-        model1 = m1;
-        model2 = m2;
       })
       .catch((error) => {
         console.error("Error loading models:", error);
@@ -450,12 +452,14 @@ class LightPawn extends PawnBehavior {
   updateModelsColor(color) {
     // Update color of both models
     [this.model1, this.model2].forEach((model) => {
-      model.traverse((child) => {
-        if (child.isMesh) {
-          child.material.color.set(color);
-          child.material.needsUpdate = true;
-        }
-      });
+      if (model) {
+        model.traverse((child) => {
+          if (child.isMesh) {
+            child.material.color.set(color);
+            child.material.needsUpdate = true;
+          }
+        });
+      }
     });
   }
 
